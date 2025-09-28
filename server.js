@@ -1,65 +1,36 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-require('dotenv').config();
+import express from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
+import connectDB from './config/db.js';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
+import cors from 'cors';
 
-const db = require('./config/db');
-
-// Import routes
-const authRoutes = require('./src/routes/auth.routes');
-const routeRoutes = require('./src/routes/route.routes');
-const busRoutes = require('./src/routes/bus.routes');
-const tripRoutes = require('./src/routes/trip.routes');
+// routes
+import authRoutes from './src/routes/auth.routes.js';
+import routeRoutes from './src/routes/route.routes.js';
+import busRoutes from './src/routes/bus.routes.js';
+import tripRoutes from './src/routes/trip.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+connectDB();
 
-// Middleware
-app.use(helmet());
 app.use(cors());
-app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+app.use(bodyParser.json());
 
-// Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/routes', routeRoutes);
-app.use('/api/v1/buses', busRoutes);
-app.use('/api/v1/trips', tripRoutes);
+app.get('/', (req, res) => res.json({ message: 'NTC Bus Tracker API running' }));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'NTC Bus Tracker API is running',
-    timestamp: new Date().toISOString()
-  });
-});
+app.use('/api/auth', authRoutes);
+app.use('/api/routes', routeRoutes);
+app.use('/api/buses', busRoutes);
+app.use('/api/trips', tripRoutes);
 
-// Error handling middleware
+// error handler simple
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
-    status: 'error',
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
-  });
+  res.status(500).json({ message: 'Server error' });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: 'Route not found'
-  });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚌 NTC Bus Tracker API running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-});
-
-module.exports = app;
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
