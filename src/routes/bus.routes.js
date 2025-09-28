@@ -1,51 +1,13 @@
-const express = require('express');
-const {
-  getAllBuses,
-  getBusById,
-  createBus,
-  updateBus,
-  deleteBus,
-  updateBusLocation
-} = require('../controllers/buses.controller');
-const { authenticateToken } = require('../middlewares/auth.middleware');
-const { requireRole, requireBusAccess } = require('../middlewares/role.middleware');
-
+import express from 'express';
+import { createBus, listBuses, getBus, postLocation, getBusLocations } from '../controllers/buses.controller.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
+import { authorize } from '../middlewares/role.middleware.js';
 const router = express.Router();
 
-// Public routes (read-only for buses)
-router.get('/', getAllBuses);
-router.get('/:id', getBusById);
+router.get('/', listBuses); // public
+router.get('/:id', getBus);
+router.post('/', authenticate, authorize(['admin','operator']), createBus); // add bus
+router.post('/:id/location', authenticate, authorize(['operator','admin']), postLocation); // push location
+router.get('/:id/locations', getBusLocations);
 
-// Protected routes
-router.post('/', 
-  authenticateToken, 
-  requireRole(['admin', 'moderator']), 
-  createBus
-);
-
-router.put('/:id', 
-  authenticateToken, 
-  requireRole(['admin', 'moderator']), 
-  updateBus
-);
-
-router.delete('/:id', 
-  authenticateToken, 
-  requireRole(['admin']), 
-  deleteBus
-);
-
-// Location tracking routes
-router.put('/:id/location', 
-  authenticateToken, 
-  requireBusAccess, 
-  updateBusLocation
-);
-
-// Additional bus-specific endpoints
-// router.get('/:id/trips', authenticateToken, getBusTrips);
-// router.get('/:id/location-history', authenticateToken, getBusLocationHistory);
-// router.get('/:id/stats', authenticateToken, getBusStats);
-// router.get('/nearby', authenticateToken, getNearbyBuses);
-
-module.exports = router;
+export default router;
