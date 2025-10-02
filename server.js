@@ -12,9 +12,18 @@ import routeRoutes from './src/routes/route.routes.js';
 import busRoutes from './src/routes/bus.routes.js';
 import tripRoutes from './src/routes/trip.routes.js';
 
+import requestStdoutLogger from './src/middlewares/requestStdoutLogger.middleware.js';
+
+
+
+import errorStdoutLogger from './src/middlewares/errorStdoutLogger.middleware.js';
+
+
 const app = express();
 connectDB();
 
+app.use(requestStdoutLogger);
+app.use(errorStdoutLogger);
 app.use(cors());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
