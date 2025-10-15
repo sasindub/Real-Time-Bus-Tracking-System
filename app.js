@@ -32,7 +32,7 @@ app.use('/api/routes', routeRoutes);
 app.use('/api/buses', busRoutes);
 app.use('/api/trips', tripRoutes);
 
-// Error handling middleware (must be last)
+// Error handling middleware
 app.use(errorHandler);
 
 export default app;
